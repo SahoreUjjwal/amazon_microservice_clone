@@ -6,7 +6,14 @@ class ShoppingService {
   constructor() {
     this.repository = new ShoppingRepository();
   }
-
+  async getCart({_id}){
+    try{
+      const cartItems = await this.repository.Cart(_id);
+      return FormateData(cartItems);
+    }catch{
+      throw err;
+    }
+  }
   async PlaceOrder(userInput) {
     const { _id, txnNumber } = userInput;
 
@@ -28,6 +35,21 @@ class ShoppingService {
       throw new APIError("Data Not found", err);
     }
   }
+//get customer Detauls
+
+
+
+  async ManageCart(customerId,item,qty,isRemove){
+    try{
+      const cartResult = await this.repository.AddCartItem(customerId,item,qty,isRemove);
+      return FormateData(cartResult);
+    }catch(err){
+
+    }
+  }
+
 }
+
+
 
 module.exports = ShoppingService;

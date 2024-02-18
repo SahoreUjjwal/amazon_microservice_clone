@@ -1,11 +1,23 @@
-const express =require("express");
-const app = express();
-app.use(express.json());
+const express = require('express');
+const { PORT } = require('./config');
+const { databaseConnection } = require('./database');
+const expressApp = require('./express-app');
 
-app.use('/',(req,res,next)=>{
-    return res.status(200).json({"msg":"Hello from product"})
-})
+const StartServer = async() => {
 
-app.listen(8002,()=>{
-    console.log("product service started at port 8002");
-})
+    const app = express();
+    
+    await databaseConnection();
+    
+    await expressApp(app);
+
+    app.listen(PORT, () => {
+        console.log(`listening to port ${PORT}`);
+    })
+    .on('error', (err) => {
+        console.log(err);
+        process.exit();
+    })
+}
+
+StartServer();
