@@ -59,7 +59,7 @@ class ShoppingRepository {
                 cartItems.push({product:{...item},unit:qty});
               }
               cart.items = cartItems;
-              return await cart.save;
+              return await cart.save();
             } else {
               return await CartModel.create({
                 customerId,items:[{product:{...item},unit:qty}]
@@ -109,7 +109,7 @@ class ShoppingRepository {
                  
                     const orderResult = await order.save();
                    
-                    profile.orders.push(orderResult);
+                   
     
                     await cart.save();
     
