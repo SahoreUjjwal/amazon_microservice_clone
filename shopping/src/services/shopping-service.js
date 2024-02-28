@@ -14,18 +14,6 @@ class ShoppingService {
       throw err;
     }
   }
-  async PlaceOrder(userInput) {
-    const { _id, txnNumber } = userInput;
-
-    // Verify the txn number with payment logs
-
-    try {
-      const orderResult = await this.repository.CreateNewOrder(_id, txnNumber);
-      return FormateData(orderResult);
-    } catch (err) {
-      throw new APIError("Data Not found", err);
-    }
-  }
 
   async GetOrders(customerId) {
     try {
@@ -35,8 +23,6 @@ class ShoppingService {
       throw new APIError("Data Not found", err);
     }
   }
-//get customer Detauls
-
 
 
   async ManageCart(customerId,item,qty,isRemove){
@@ -44,7 +30,7 @@ class ShoppingService {
       const cartResult = await this.repository.AddCartItem(customerId,item,qty,isRemove);
       return FormateData(cartResult);
     }catch(err){
-
+      throw err;
     }
   }
   async SubscribeEvents(payload){

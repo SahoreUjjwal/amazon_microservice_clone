@@ -1,13 +1,11 @@
+const { CUSTOMER_BINDING_KEY, SHOPPING_BINDING_KEY } = require('../config');
 const ProductService = require('../services/product-service');
-const {PublishCustomerEvents,PublishShoppingEvents} =require('../utils')
+const {PublishMessage,SubscribeMessage} =require('../utils')
 const UserAuth = require('./middlewares/auth')
 
-module.exports = (app) => {
+module.exports = (app,channel) => {
     
     const service = new ProductService();
- 
-
-
     app.post('/product/create', async(req,res,next) => {
         
         try {
@@ -69,7 +67,7 @@ module.exports = (app) => {
         //get payload and send to customer service
         const {data} = await service.GetPrroductPayload(_id,{productId:req.body._id},'ADD_TO_WISHLIST');
         try {
-            PublishCustomerEvents(data);
+            PublishMessage(channel,CUSTOMER_BINDING_KEY,JSON.stringify(data));
             
             return res.status(200).json(data.data.product);
         } catch (err) {
@@ -84,7 +82,7 @@ module.exports = (app) => {
 
         try {
             const {data} = await service.GetProductById(_id,{productId},'REMOVE_FROM_WHISHLIST')
-            PublishCustomerEvents(data);
+            PublishMessage(channel,CUSTOMER_BINDING_KEY,JSON.stringify(data));
             return res.status(200).json(data.data.product);
         } catch (err) {
             next(err)
@@ -97,10 +95,10 @@ module.exports = (app) => {
         const { _id } = req.user;
         
         try {     
-            const {data} = await service.GetProductPayload(_id,{productId:req.body._id,qty:req.body.qty},'ADD_TO_CART');
+            const {data} = await service.GetPrroductPayload(_id,{productId:req.body._id,qty:req.body.qty},'ADD_TO_CART');
     
-           PublishCustomerEvents(data);
-           PublishShoppingEvents(data);
+            PublishMessage(channel,CUSTOMER_BINDING_KEY,JSON.stringify(data));
+            PublishMessage(channel,SHOPPING_BINDING_KEY,JSON.stringify(data));
            const response ={
             product:data.data.product,
             unit:data.data.qty
@@ -117,9 +115,9 @@ module.exports = (app) => {
         const { _id } = req.user;
         const productId = req.params.id;
         try {
-            const {data} = await service.GetProductPayload(_id,{productId },'REMOVE_FROM_CART');
-            PublishCustomerEvents(data);
-            PublishShoppingEvents(data);
+            const {data} = await service.GetPrroductPayload(_id,{productId },'REMOVE_FROM_CART');
+            PublishMessage(channel,CUSTOMER_BINDING_KEY,JSON.stringify(data));
+            PublishMessage(channel,SHOPPING_BINDING_KEY,JSON.stringify(data));
             const response ={
                 product:data.data.product,
                 unit:data.data.qty

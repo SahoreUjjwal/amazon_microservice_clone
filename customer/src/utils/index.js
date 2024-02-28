@@ -1,8 +1,9 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
+const amqplib = require("amqplib");
+const SubscribeEvents = require("../services/customer-service");
 const { APP_SECRET } = require("../config");
-
+const {CUSTOMER_BINDING_KEY,QUEUE_NAME,MESSAGE_BROKER_URL,EXCHANGE_NAME} =require("../config/index");
 //Utility functions
 module.exports.GenerateSalt = async () => {
   return await bcrypt.genSalt();
@@ -22,7 +23,7 @@ module.exports.ValidatePassword = async (
 
 module.exports.GenerateSignature = async (payload) => {
   try {
-    return await jwt.sign(payload, APP_SECRET, { expiresIn: "30d" });
+    return  jwt.sign(payload, APP_SECRET, { expiresIn: "30d" });
   } catch (error) {
     console.log(error);
     return error;
@@ -33,7 +34,7 @@ module.exports.ValidateSignature = async (req) => {
   try {
     const signature = req.get("Authorization");
     console.log(signature);
-    const payload = await jwt.verify(signature.split(" ")[1], APP_SECRET);
+    const payload =  jwt.verify(signature.split(" ")[1], APP_SECRET);
     req.user = payload;
     return true;
   } catch (error) {
@@ -49,3 +50,28 @@ module.exports.FormateData = (data) => {
     throw new Error("Data Not found!");
   }
 };
+
+
+//create a channel
+module.exports.CreateChannel = async()=>{
+  try{
+    console.log("hi");
+    const connection = await amqplib.connect(MESSAGE_BROKER_URL);
+    const channel = await connection.createChannel();
+    await channel.assertExchange(EXCHANGE_NAME,'direct',false);
+    return channel;
+  }
+  catch(err){
+    throw err;
+  }
+}
+
+//subscribe message
+module.exports.SubscribeMessage =async (channel,service)=>{
+  const appQueue = await channel.assertQueue(QUEUE_NAME);
+  channel.bindQueue(appQueue.queue,EXCHANGE_NAME,CUSTOMER_BINDING_KEY);
+  channel.consume(appQueue.queue,data=>{
+      service.SubscribeEvents(data.content.toString());
+      channel.ack(data);
+  });
+}

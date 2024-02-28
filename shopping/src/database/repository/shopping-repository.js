@@ -1,12 +1,6 @@
-const { CustomerModel, ProductModel, OrderModel, CartModel } = require('../models');
 const { v4: uuidv4 } = require('uuid');
-const { APIError, BadRequestError } = require('../../utils/app-errors')
 
-
-//Dealing with data base operations
 class ShoppingRepository {
-
-    // payment
 
     async Orders(customerId){
         try{
@@ -32,8 +26,6 @@ class ShoppingRepository {
     }
 
     async AddCartItem(customerId, item, qty, isRemove) {
-    
-        
         try {
           const cart = await CartModel.findOne({customerId:customerId});
           const {_id} = item;
@@ -75,26 +67,16 @@ class ShoppingRepository {
       }
 
     async CreateNewOrder(customerId, txnId){
-
-        //check transaction for payment Status
-        
         try{
             const cart = await CartModel.findOne({customerId:customerId});
-    
             if(cart){
-                
                 let amount = 0;   
-    
                 let cartItems = cart.items;
-    
                 if(cartItems.length > 0){
-                    //process Order
                     cartItems.map(item => {
                         amount += parseInt(item.product.price) *  parseInt(item.unit);   
                     });
-        
                     const orderId = uuidv4();
-        
                     const order = new OrderModel({
                         orderId,
                         customerId,
@@ -103,16 +85,9 @@ class ShoppingRepository {
                         status: 'received',
                         items: cartItems
                     })
-        
                     cart.items = [];
-                    
-                 
-                    const orderResult = await order.save();
-                   
-                   
-    
+                    const orderResult = await order.save();    
                     await cart.save();
-    
                     return orderResult;
                 }
             }
@@ -122,8 +97,6 @@ class ShoppingRepository {
         }catch(err){
             throw APIError('API Error', STATUS_CODES.INTERNAL_ERROR, 'Unable to Find Category')
         }
-        
-
     }
 }
 
