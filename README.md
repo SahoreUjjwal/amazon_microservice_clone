@@ -34,17 +34,17 @@ The communication between microservices is based on an event-driven architecture
 
 1. **Clone the Repository**:
 
-git clone https://github.com/your-username/amazon-clone-backend.git
+   git clone https://github.com/your-username/amazon-clone-backend.git
 
 
 2. **Install Dependencies**:
 
-install docker on your system
+   install docker on your system
 
-cd amazon-clone-backend
+   cd amazon-clone-backend
 
-run: docker-compose build
-run: docker-compose up
+   run: docker-compose build
+   run: docker-compose up
 
 ## Contributing
-Contributions are welcome! Feel free to open issues or submit pull requests.
+   Contributions are welcome! Feel free to open issues or submit pull requests.
